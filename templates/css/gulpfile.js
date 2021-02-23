@@ -1,4 +1,5 @@
 const gulp = require('gulp');
+const pug = require('gulp-pug');
 const browserSync = require('browser-sync').create();
 
 function browserSyncTask (cb) {
@@ -11,6 +12,16 @@ function browserSyncTask (cb) {
   cb();
 };
 
+function pugCompileTask () {
+  return gulp.src('./pug/*.pug')
+    .pipe(pug({
+      doctype: 'html',
+      pretty: true,
+    }))
+    .pipe(gulp.dest('./'))
+    .pipe(browserSync.stream());
+};
+
 function browserSyncReloadTask (cb) {
   browserSync.reload();
   cb();
@@ -18,10 +29,11 @@ function browserSyncReloadTask (cb) {
 
 function watchFilesTask () {
   gulp.watch('./css/**/*', browserSyncReloadTask);
-  gulp.watch('./*.html', browserSyncReloadTask);
+  gulp.watch('./pug/*.pug', pugCompileTask);
   gulp.watch('./js/*.js', browserSyncReloadTask);
 };
 
-const build = gulp.series(browserSyncTask, watchFilesTask);
+const build = gulp.series(pugCompileTask,browserSyncTask, watchFilesTask);
 
+exports.pug = pugCompileTask;
 exports.default = build;

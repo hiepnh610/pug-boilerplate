@@ -1,4 +1,5 @@
 const gulp = require('gulp');
+const pug = require('gulp-pug');
 const sass = require('gulp-sass');
 const sourcemaps = require('gulp-sourcemaps');
 const browserSync = require('browser-sync').create();
@@ -11,6 +12,16 @@ function browserSyncTask (cb) {
     port: 3000
   });
   cb();
+};
+
+function pugCompileTask () {
+  return gulp.src('./pug/*.pug')
+    .pipe(pug({
+      doctype: 'html',
+      pretty: true,
+    }))
+    .pipe(gulp.dest('./'))
+    .pipe(browserSync.stream());
 };
 
 // "compact" | "compressed" | "expanded" | "nested"
@@ -30,11 +41,17 @@ function browserSyncReloadTask (cb) {
 
 function watchFilesTask () {
   gulp.watch('./scss/**/*', sassCompileTask);
-  gulp.watch('./*.html', browserSyncReloadTask);
+  gulp.watch('./pug/*.pug', pugCompileTask);
   gulp.watch('./js/*.js', browserSyncReloadTask);
 };
 
-const build = gulp.series(sassCompileTask, browserSyncTask, watchFilesTask);
+const build = gulp.series(
+  pugCompileTask,
+  sassCompileTask,
+  browserSyncTask,
+  watchFilesTask
+);
 
+exports.pug = pugCompileTask;
 exports.sass = sassCompileTask;
 exports.default = build;
